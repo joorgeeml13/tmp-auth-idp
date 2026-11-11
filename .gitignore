@@ -1,0 +1,27 @@
+# Quarkus & Maven
+target/
+.mvn/wrapper/maven-wrapper.jar
+*.log
+
+# IDEs & OS
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment & Secretos (CRÍTICO para un IdP)
+.env
+.env.*
+!.env.example
+
+# Claves criptográficas locales y certificados
+certs/
+*.pem
+*.key
+*.pub
+*.p12
+*.jks
+
+# Subagentes / Salidas temporales
+.agents/tmp/
