@@ -29,3 +29,7 @@ Code in `src/main/java/dev/jmatias/` is organized strictly by functional domain,
 ## 4. Git Conventions
 Follow the Conventional Commits standard: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`.
 Committing .env files, certificates (`.pem`, `.key`, `.jks`), or temporary outputs is forbidden.
+## 5. Testing Conventions & Structure
+- **Mirror Structure:** `src/test/java/dev/jmatias/` MUST strictly mirror the exact package hierarchy of `src/main/java/dev/jmatias/`. Every production class must have a corresponding unit test class in the exact same package path (`<ClassName>.java` -> `<ClassName>Test.java`).
+- **Unit Test Isolation:** Unit tests (`*Test.java`) must test classes in isolation without booting the Quarkus container or touching a real database. Leverage constructor injection with mocks/stubs (JUnit 5 + Mockito/AssertJ) for fast execution.
+- **Integration Tests Separation:** If `@QuarkusTest` integration tests are needed for endpoints or persistence, suffix them with `*IT.java` inside the same mirrored package so they remain clearly distinguishable from unit tests.
