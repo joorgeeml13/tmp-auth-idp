@@ -1,5 +1,5 @@
 ---
-name: quarkus-dev
+name: feature-dev
 description: Specialist in efficient backend development, clean architecture, and cloud-native optimization with Quarkus and Java 21+. Use to design, implement, refactor, and debug microservices, REST APIs, persistence, concurrency, and tests in Quarkus.
 ---
 

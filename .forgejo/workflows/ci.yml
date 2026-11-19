@@ -1,0 +1,21 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    # Adjust to the label of your Forgejo runner.
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      # shortcut: no Postgres service yet, the first *IT using the DB needs one
+      # (or the runner's docker socket for Dev Services), add it with that test.
+      - run: ./mvnw -B verify

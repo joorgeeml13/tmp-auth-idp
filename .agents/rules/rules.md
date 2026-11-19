@@ -30,6 +30,9 @@ Code in `src/main/java/dev/jmatias/` is organized strictly by functional domain,
 Follow the Conventional Commits standard: `feat:`, `fix:`, `refactor:`, `test:`, `chore:`, `docs:`.
 Committing .env files, certificates (`.pem`, `.key`, `.jks`), or temporary outputs is forbidden.
 ## 5. Testing Conventions & Structure
-- **Mirror Structure:** `src/test/java/dev/jmatias/` MUST strictly mirror the exact package hierarchy of `src/main/java/dev/jmatias/`. Every production class must have a corresponding unit test class in the exact same package path (`<ClassName>.java` -> `<ClassName>Test.java`).
-- **Unit Test Isolation:** Unit tests (`*Test.java`) must test classes in isolation without booting the Quarkus container or touching a real database. Leverage constructor injection with mocks/stubs (JUnit 5 + Mockito/AssertJ) for fast execution.
-- **Integration Tests Separation:** If `@QuarkusTest` integration tests are needed for endpoints or persistence, suffix them with `*IT.java` inside the same mirrored package so they remain clearly distinguishable from unit tests.
+- **Two kinds of tests, split by what they need:**
+  - **Unit (`*Test.java`):** pure logic only (hashing, token building, validators, mappers, services whose collaborators are external I/O boundaries). No Quarkus container, no database. JUnit 5 + Mockito/AssertJ with constructor injection. Mock only external I/O boundaries (HTTP clients, clock); never mock a repository to test persistence behavior.
+  - **Integration (`*IT.java`):** anything that touches endpoints, persistence, Flyway or security filters. Use `@QuarkusTest` + REST Assured against real PostgreSQL (Dev Services/Testcontainers). H2 and SQLite are forbidden.
+- **Mirror Structure:** `src/test/java/dev/jmatias/` MUST mirror the package hierarchy of `src/main/java/dev/jmatias/`. A class with logic gets `<ClassName>Test.java`; a class that only makes sense with the container (Resource, Repository) gets `<ClassName>IT.java`. Classes with neither logic nor I/O (records, plain DTOs) need no test.
+- **Precedence:** if an agent file in `.agents/agents/` contradicts this section, this section wins.
+- **Build:** `./mvnw verify` runs both: `*Test` with Surefire and `*IT` with Failsafe (`skipITs=false` in the `pom.xml`).
