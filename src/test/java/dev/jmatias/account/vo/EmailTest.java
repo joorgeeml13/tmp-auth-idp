@@ -28,17 +28,23 @@ class EmailTest {
     @Test
     void shouldRejectTooLong() {
         String local = "a".repeat(256 - "@x.com".length());
-        assertThatThrownBy(() -> new Email(local + "@x.com")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Email(local + "@x.com"))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.email.invalid");
     }
 
     @Test
     void shouldRejectNull() {
-        assertThatThrownBy(() -> new Email(null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Email(null))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.email.required");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"", "   ", "plain", "a@b", "@x.com", "a@", "a b@x.com", "a@@x.com", "a@x .com"})
     void shouldRejectInvalidFormat(String input) {
-        assertThatThrownBy(() -> new Email(input)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Email(input))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.email.invalid");
     }
 }

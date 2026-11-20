@@ -18,17 +18,17 @@ public record IpAddress(InetAddress value) {
     /** Accepts IP literals only: anything else would make InetAddress hit DNS. */
     public static IpAddress parse(String text) {
         if (text == null) {
-            throw new IllegalArgumentException("IP address is required");
+            throw new InvalidValueException("account.ip.required");
         }
         String t = text.trim();
         boolean literal = IPV4.matcher(t).matches() || (t.contains(":") && IPV6_CHARS.matcher(t).matches());
         if (!literal) {
-            throw new IllegalArgumentException("Invalid IP address");
+            throw new InvalidValueException("account.ip.invalid");
         }
         try {
             return new IpAddress(InetAddress.getByName(t));
         } catch (UnknownHostException e) {
-            throw new IllegalArgumentException("Invalid IP address", e);
+            throw new InvalidValueException("account.ip.invalid", e);
         }
     }
 }

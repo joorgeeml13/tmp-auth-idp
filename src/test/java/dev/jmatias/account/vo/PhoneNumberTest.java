@@ -23,11 +23,15 @@ class PhoneNumberTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "600111222", "+0123456", "+1", "+34 600 111 222", "+34-600", "+1234567890123456", "+34abc"})
     void shouldRejectNonE164(String input) {
-        assertThatThrownBy(() -> new PhoneNumber(input)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new PhoneNumber(input))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.phone.invalid");
     }
 
     @Test
     void shouldRejectNull() {
-        assertThatThrownBy(() -> new PhoneNumber(null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new PhoneNumber(null))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.phone.required");
     }
 }

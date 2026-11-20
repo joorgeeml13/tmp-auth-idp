@@ -9,11 +9,11 @@ public record Email(String value) {
 
     public Email {
         if (value == null) {
-            throw new IllegalArgumentException("Email is required");
+            throw new InvalidValueException("account.email.required");
         }
         value = value.trim().toLowerCase(Locale.ROOT);
         if (value.length() > 255 || !FORMAT.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid email");
+            throw new InvalidValueException("account.email.invalid");
         }
     }
 }

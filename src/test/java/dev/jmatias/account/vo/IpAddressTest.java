@@ -29,11 +29,15 @@ class IpAddressTest {
     @ValueSource(strings = {"", "localhost", "example.com", "1.2.3", "256.1.1.1", "1.2.3.4.5", "01.2.3.4", "::g", "fe80::1%eth0", "1.2.3.4 "
             + "x"})
     void shouldRejectNonLiterals(String input) {
-        assertThatThrownBy(() -> IpAddress.parse(input)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> IpAddress.parse(input))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.ip.invalid");
     }
 
     @Test
     void shouldRejectNull() {
-        assertThatThrownBy(() -> IpAddress.parse(null)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> IpAddress.parse(null))
+                .isInstanceOf(InvalidValueException.class)
+                .hasFieldOrPropertyWithValue("messageKey", "account.ip.required");
     }
 }

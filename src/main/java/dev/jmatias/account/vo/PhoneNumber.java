@@ -9,11 +9,11 @@ public record PhoneNumber(String value) {
 
     public PhoneNumber {
         if (value == null) {
-            throw new IllegalArgumentException("Phone number is required");
+            throw new InvalidValueException("account.phone.required");
         }
         value = value.trim();
         if (!E164.matcher(value).matches()) {
-            throw new IllegalArgumentException("Invalid phone number");
+            throw new InvalidValueException("account.phone.invalid");
         }
     }
 }
