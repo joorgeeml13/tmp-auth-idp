@@ -13,10 +13,14 @@ public class TenantContext {
 
     private String schema;
 
-    public void set(String schema) {
+    static void requireValid(String schema) {
         if (schema == null || !SCHEMA.matcher(schema).matches()) {
             throw new IllegalArgumentException("Invalid tenant schema name");
         }
+    }
+
+    public void set(String schema) {
+        requireValid(schema);
         this.schema = schema;
     }
 

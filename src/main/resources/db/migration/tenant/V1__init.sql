@@ -1,0 +1,2 @@
+-- Applied to every project schema by TenantMigrationService (search_path = that schema).
+-- Intentionally empty: it only starts the migration history. Tables arrive from V2 on.
