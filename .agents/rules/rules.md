@@ -41,6 +41,11 @@ Entity
 - A `Service` never calls a `UseCase`.
 - One `UseCase` class per business operation, named `<Verb><Noun>UseCase` (e.g. `RegisterAccountUseCase`), with a single public method `execute`.
 - Only `UseCase` classes may inject a `Repository`. It is `public` because use cases live in a different package (`usecase/`); this restriction is a convention, not enforced by the compiler. Other domains reach this domain's data through its use cases, never through its repository.
+## 2.1 Multitenancy
+PostgreSQL schema per project plus a shared `core` schema (`project`, `signing_key`). Full design in `docs/multitenancy.md`.
+- Migrations: `db/migration/core/` for `core`, `db/migration/tenant/` for every project schema. Never put tenant tables in `core` or the reverse.
+- Tenant tables have no `project_id` and no FK to other schemas; isolation comes from the schema.
+- A schema name is never built from user input; it comes from `core.project.schema_name`.
 ## 3. Unbreakable Code Rules
 1. Repository Pattern: Always use `implements PanacheRepositoryBase<Entity, ID>` (`PanacheRepository<Entity>` fixes the id to `Long`). Extending `PanacheEntity` is strictly forbidden (avoids coupling entities to static methods).
 2. Entity Boundary: No `@Entity` class may leak outside the `*UseCase` layer. JAX-RS endpoints must only accept and return Java Records located in `dto/` packages.
