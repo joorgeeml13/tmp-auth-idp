@@ -31,7 +31,7 @@ Un proyecto es una aplicación cliente (por ejemplo, una de mis apps personales)
 Notas:
 
 - `project.status`: `PROVISIONING` → `ACTIVE` → `SUSPENDED`. Solo los `ACTIVE` resuelven tenant.
-- `project.schema_name` se **deriva del id** (`'p_' || replace(id::text, '-', '')`, 34 caracteres, límite de PostgreSQL: 63) y nunca de input del usuario. Lleva un `CHECK (schema_name ~ '^p_[a-f0-9]{32}$')`. Motivo: un nombre de schema no se puede parametrizar en SQL, así que debe ser imposible que llegue contaminado.
+- `project.schema_name` se **deriva del id** (`'p_' || replace(id::text, '-', '')`, 34 caracteres, límite de PostgreSQL: 63) y nunca de input del usuario. Es una columna generada (`GENERATED ALWAYS ... STORED`), así que no se puede escribir ni divergir del id. Motivo: un nombre de schema no se puede parametrizar en SQL, así que debe ser imposible que llegue contaminado.
 - `signing_key.status`: `ACTIVE` (firma y verifica), `RETIRED` (solo verifica hasta `retire_at`, para no invalidar tokens vivos al rotar), `REVOKED` (no verifica).
 - Se guarda **solo la parte pública**. La clave privada no entra en la base de datos (ver preguntas abiertas).
 
@@ -43,7 +43,7 @@ Ninguna tabla de tenant tiene FK hacia `core` ni a otro schema. El vínculo es s
 
 ## Resolución del tenant en cada petición
 
-1. Un `TenantResolver` (Hibernate ORM `multitenant=SCHEMA`) obtiene el proyecto de la petición, lo busca en `core.project` (con caché) y devuelve su `schema_name`.
+1. Un `TenantResolver` (Hibernate ORM `multitenant=SCHEMA`) obtiene el proyecto de la petición, lo busca en `core.project` (sin caché en la v1) y devuelve su `schema_name`.
 2. Hibernate fija el `search_path` de la conexión a ese schema mientras dura la sesión y lo restablece al devolverla al pool.
 3. El código de dominio (`Account`, `Credentials`, ...) trabaja sin saber en qué tenant está.
 
@@ -53,6 +53,12 @@ Dos persistence units, porque las entidades de `core` no son multitenant:
 |----|-----------|--------|
 | `core` | `Project`, `SigningKey` | ninguno, schema `core` fijo |
 | `tenant` (default) | `Account`, `Credentials`, ... | por petición |
+
+## Conexión a PostgreSQL
+
+V1: **un único usuario y una única conexión** para Flyway, el provisionado y la app. Ese usuario necesita `CREATE` sobre la base de datos (para crear los schemas de proyecto) y es propietario de `core` y de todos los `p_<uuid>`.
+
+Más adelante se puede separar en un rol de migraciones (DDL) y otro de aplicación (solo DML), pero obliga a repartir permisos en cada schema nuevo y a tener un segundo datasource. No se hace en la v1.
 
 ## Migraciones (Flyway)
 
@@ -88,7 +94,7 @@ dev.jmatias/
 
 ## Qué no se hace (por ahora)
 
-- Un rol de PostgreSQL por tenant: la app usa un único rol con acceso a todos los schemas. Se puede endurecer más adelante.
+- Un rol de PostgreSQL por tenant, o separar roles de migración y de aplicación: un único usuario accede a todos los schemas. Se puede endurecer más adelante.
 - Particionar o sacar un proyecto grande a otra base de datos.
 - Consultas que crucen proyectos. Si hacen falta (métricas), se hacen desde un job que itera los schemas.
 
